@@ -33,7 +33,7 @@ userRouter.get<
     ('/:id', (req, res) => {
   
   console.log("---------------------------------------------")
-  console.log("GET USER " + req.params.id)
+  console.log("REST GET USER " + req.params.id)
   let dbResponse = db.get("User", req.params.id)
   console.log("RESULT " + dbResponse.result + " with " + JSON.stringify(dbResponse.data))
   res.status(dbResponse.result).json(<User>dbResponse?.data?.at(0)).end()
@@ -49,7 +49,7 @@ userRouter.post<
   
   req.body.id = uuidv4()
   console.log("---------------------------------------------")
-  console.log("CREATE USER " + req.body.id + " with " + JSON.stringify(req.body))
+  console.log("REST CREATE USER " + req.body.id + " with " + JSON.stringify(req.body))
   let dbResponse = db.add("User", req.body.id, req.body)
   console.log("RESULT " + dbResponse.result + " with " + JSON.stringify(dbResponse.data))
   res.status(dbResponse.result).json(<User>dbResponse?.data?.at(0)).end()
@@ -65,7 +65,7 @@ userRouter.put<
 
   req.body.id = req.params.id
   console.log("---------------------------------------------")
-  console.log("UPDATE USER " + req.params.id + " with " + JSON.stringify(req.body))
+  console.log("REST UPDATE USER " + req.params.id + " with " + JSON.stringify(req.body))
   let dbResponse = db.update("User", req.params.id, req.body)
   console.log("RESULT " + dbResponse.result + " with " + JSON.stringify(dbResponse.data))
   res.status(dbResponse.result).json(<User>dbResponse?.data?.at(0)).end()
@@ -80,7 +80,7 @@ userRouter.delete<
     ('/:id', (req, res) => {
 
   console.log("---------------------------------------------")
-  console.log("DELETE USER " + req.params.id)
+  console.log("REST DELETE USER " + req.params.id)
   
   let dbResponse = db.getall("Member")
   let members : Member[] = <Member[]>dbResponse.data

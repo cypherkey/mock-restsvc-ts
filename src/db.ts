@@ -1,8 +1,10 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync, unlinkSync, writeFileSync, } from 'fs'
+import { join } from 'path'
 import { BaseModel, User, Group, Member } from './model'
 
 export interface Response {
-    data:  BaseModel[] | User[] | Group[] | null | undefined
+    //data:  BaseModel[] | User[] | Group[] | null | undefined
+    data: any[] | null | undefined
     result: Result
 }
 
@@ -30,15 +32,29 @@ export class Database {
 
     }
 
+    getMetadata(type : string) : Response {
+        console.log("DB RESTYPES")
+
+        let resTypes : any[] = []
+        readdirSync(this.basePath).forEach( (dir, index, array) => {
+            let f : string = join(this.basePath, dir, '__'+type)
+            if (existsSync(f)) {
+                resTypes.push(JSON.parse(readFileSync(f, 'utf8')))
+            }
+        })
+
+        return { data: resTypes, result: Result.SUCCESS }
+    }
+
     getall(resource: ResourceType) : Response {
         console.log("DB GETALL " + resource)
 
-        let path = this.basePath + "/" + resource
+        let path = join(this.basePath, resource)
         if ( ! existsSync(path) ) {
             return { data: null, result: Result.NOTFOUND }
         }
         let users : BaseModel[] = []
-        readdirSync(path).forEach(file => { users.push(JSON.parse(readFileSync(path + "/" + file, 'utf8'))) })
+        readdirSync(path).filter( (file) => !file.startsWith("__")).forEach(file => { users.push(JSON.parse(readFileSync(join(path, file), 'utf8'))) })
         
         return { data: users, result: Result.SUCCESS }
     }
@@ -46,7 +62,7 @@ export class Database {
     get(resource: ResourceType, id: string) : Response {
         console.log("DB GET " + resource + " WITH ID " + id)
 
-        let path = this.basePath + "/" + resource + "/" + id
+        let path = join(this.basePath, resource, id)
         if (existsSync(path)) {
             return { data: [ JSON.parse(readFileSync(path, 'utf8')) ], result: Result.SUCCESS }
         } else {
@@ -57,9 +73,9 @@ export class Database {
     add(resource: ResourceType, id: string, data: User | Group | Member ) : Response {
         console.log("DB ADD " + resource + " WITH ID " + id)
 
-        let path = this.basePath + "/" + resource
+        let path = join(this.basePath, resource)
         this.createDir(path)
-        path = path + "/" + id
+        path = join(path, id)
 
         if (existsSync(path)) {
             return { data: null, result: Result.CONFLICT }
@@ -84,7 +100,7 @@ export class Database {
     delete(resource: ResourceType, id: string) : Response {
         console.log("DB DELETE " + resource + " WITH ID " + id)
 
-        let path = this.basePath + "/" + resource + "/" + id
+        let path = join(this.basePath, resource, id)
         if (existsSync(path)) {
             unlinkSync(path)
             return { data: null, result: Result.SUCCESS }
